@@ -2,9 +2,9 @@
 # Custom rules for ZERO_CHECK
 .SUFFIXES: 
 all: \
-	/Users/virt/Developer/Self-Driving\ cars/batururimi/Term3/path-planning/ide_profiles/xcode/CMakeFiles/ZERO_CHECK
+	/Users/virt/Developer/self-driving\ cars/batururimi/Term3/path-planning/ide_profiles/xcode/CMakeFiles/ZERO_CHECK
 
 
-/Users/virt/Developer/Self-Driving\ cars/batururimi/Term3/path-planning/ide_profiles/xcode/CMakeFiles/ZERO_CHECK: 
+/Users/virt/Developer/self-driving\ cars/batururimi/Term3/path-planning/ide_profiles/xcode/CMakeFiles/ZERO_CHECK: 
 	echo ""
-	make -f /Users/virt/Developer/Self-Driving\ cars/batururimi/Term3/path-planning/ide_profiles/xcode/CMakeScripts/ReRunCMake.make
+	make -f /Users/virt/Developer/self-driving\ cars/batururimi/Term3/path-planning/ide_profiles/xcode/CMakeScripts/ReRunCMake.make

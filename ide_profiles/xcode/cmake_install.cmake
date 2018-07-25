@@ -1,4 +1,4 @@
-# Install script for directory: /Users/virt/Developer/Self-Driving cars/batururimi/Term3/path-planning
+# Install script for directory: /Users/virt/Developer/self-driving cars/batururimi/Term3/path-planning
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -40,5 +40,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/Users/virt/Developer/Self-Driving cars/batururimi/Term3/path-planning/ide_profiles/xcode/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/Users/virt/Developer/self-driving cars/batururimi/Term3/path-planning/ide_profiles/xcode/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
