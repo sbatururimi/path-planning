@@ -31,7 +31,7 @@ tuple<int, bool> bestChangeLaneOption(const vector<vector<double>> &sensor_fusio
 
 		float d = sensor_fusion[i][6];
 
-		// if the car is in the same lane, skip it
+		//if the car is in the same lane, skip it
 		if(d < (2 + 4 * myLane + 2) && d > (2 + 4 * myLane - 2)){
 			continue;
 		}
@@ -58,8 +58,13 @@ tuple<int, bool> bestChangeLaneOption(const vector<vector<double>> &sensor_fusio
 
 		check_car_s += ((double) prev_size * .02 * check_speed);
 		// check that there is enough space for lane change, if not mark it as an option to not consider
-		// We need at least 50 meters tp keep it safe
-		if(fabs(check_car_s - car_s) < 50){
+		// We need at least 50 meters to keep it safe
+		if(check_car_s > car_s && (check_car_s - car_s) < 50){
+		// if(fabs(check_car_s - car_s) < 50){
+			allowed_transition_to_lane[lane] = false;
+			continue;
+		}
+		else if(check_car_s < car_s && (car_s - check_car_s) < 30){
 			allowed_transition_to_lane[lane] = false;
 			continue;
 		}
@@ -72,21 +77,53 @@ tuple<int, bool> bestChangeLaneOption(const vector<vector<double>> &sensor_fusio
 	int minCost = INT_MAX;
 	int targetLane = myLane;
 	bool reduceSpeed = false;
-	for (auto it = cars_in_lane.begin(); it != cars_in_lane.end(); ++it){
+	// for (auto it = cars_in_lane.begin(); it != cars_in_lane.end(); ++it){
+	// 	int lane = it->first;
+	// 	// if the transition is not allowed skip it
+	// 	if(!allowed_transition_to_lane[lane]){
+	// 		continue;
+	// 	}
+
+	// 	// get the cost for each transition
+	// 	// vector<int> cars = it->second; // car in lane `lane`
+	// 	// int index = cars[0];
+	// 	int carIndex = it->second;
+		// double vx = sensor_fusion[carIndex][3];
+  // 		double vy = sensor_fusion[carIndex][4];
+  // 		double car_speed = sqrt(vx * vx + vy * vy);
+		// float cost = inefficiency_cost(49.5, car_speed);
+		// if (cost < minCost){
+		// 	minCost = cost;
+		// 	targetLane = lane;
+		// 	if (car_speed < ref_vel){
+		// 		reduceSpeed = true;
+		// 	}
+		// 	continue;
+		// }
+	// }
+	for(auto it = allowed_transition_to_lane.begin(); it != allowed_transition_to_lane.end(); ++it){
 		int lane = it->first;
-		// if the transition is not allowed skip it
-		if(!allowed_transition_to_lane[lane]){
+		bool allowed = it->second;
+		if(!allowed){
 			continue;
 		}
 
-		// get the cost for each transition
-		// vector<int> cars = it->second; // car in lane `lane`
-		// int index = cars[0];
-		int carIndex = it->second;
-		double vx = sensor_fusion[carIndex][3];
-  		double vy = sensor_fusion[carIndex][4];
-  		double car_speed = sqrt(vx * vx + vy * vy);
-		float cost = inefficiency_cost(49.5, car_speed);
+		int carIndex = -1;
+		float cost;
+		double car_speed = ref_vel;
+		try{
+			carIndex = cars_in_lane.at(lane);
+			double vx = sensor_fusion[carIndex][3];
+	  		double vy = sensor_fusion[carIndex][4];
+	  		car_speed = sqrt(vx * vx + vy * vy);
+			float cost = inefficiency_cost(49.5, car_speed);
+			
+		}
+		catch (const std::out_of_range& oor) {
+			cost = 0.2;
+		}
+
+
 		if (cost < minCost){
 			minCost = cost;
 			targetLane = lane;
@@ -95,6 +132,7 @@ tuple<int, bool> bestChangeLaneOption(const vector<vector<double>> &sensor_fusio
 			}
 			continue;
 		}
+		
 	}
 
 	return  std::make_tuple(targetLane, reduceSpeed);

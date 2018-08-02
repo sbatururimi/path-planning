@@ -772,10 +772,6 @@ lapacke_mangling.h
 
 /Users/virt/Developer/self-driving cars/batururimi/Term3/path-planning/src/Eigen-3.3/Eigen/src/plugins/MatrixCwiseUnaryOps.h
 
-/Users/virt/Developer/self-driving cars/batururimi/Term3/path-planning/src/bestLane.cpp
-bestLane.hpp
-/Users/virt/Developer/self-driving cars/batururimi/Term3/path-planning/src/bestLane.hpp
-
 /Users/virt/Developer/self-driving cars/batururimi/Term3/path-planning/src/bestLane.hpp
 unordered_map
 -
@@ -867,6 +863,8 @@ json.hpp
 /Users/virt/Developer/self-driving cars/batururimi/Term3/path-planning/src/json.hpp
 spline.h
 /Users/virt/Developer/self-driving cars/batururimi/Term3/path-planning/src/spline.h
+cfloat
+-
 bestLane.hpp
 /Users/virt/Developer/self-driving cars/batururimi/Term3/path-planning/src/bestLane.hpp
 

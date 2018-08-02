@@ -9,6 +9,8 @@
 #include "Eigen-3.3/Eigen/QR"
 #include "json.hpp"
 #include "spline.h"
+
+#include <cfloat>
 #include "bestLane.hpp"
 
 
@@ -285,7 +287,8 @@ int main() {
 
 		bool too_close = false;
 		bool reduceSpeed = false;
-		double speed_infront_car =  ref_vel;
+		double speed_infront_car = ref_vel;
+		double nearest_infront_car = DBL_MAX;
 		// find ref_v to use
 		for(int i = 0; i < sensor_fusion.size(); ++i){
 		  // car is in my lane
@@ -302,9 +305,14 @@ int main() {
 			    check_car_s += ((double) prev_size * .02 * check_speed);// if using previous points can project
 			    // s value out.
 			    // check s values greater than mine and s gap:
-			    // if the car is in front of us and the gap is less than 30 meters
-			    if(check_car_s > car_s && (check_car_s - car_s) < 30){
+			    // if the car is in front of us and the gap is less than 40 meters
+			    double dis = check_car_s - car_s;
+			    if(check_car_s > car_s && dis < 50){
+			    	if(dis < nearest_infront_car){
+			    		nearest_infront_car = dis;
+			    		speed_infront_car = check_speed;
 					 //   ref_vel = 29.5; //mph
+			    	}
 					// too_close = true;
 					 // if(lane > 0){
 					 //   lane -= 1;
@@ -312,7 +320,7 @@ int main() {
 			    	int laneChange;
 				 	std::tie(laneChange, reduceSpeed) = bestChangeLaneOption(sensor_fusion, lane, i, prev_size, car_s, ref_vel);
 				
-				 	speed_infront_car = check_speed;
+				 	
 				 	if(lane == laneChange){
 				 		too_close = true;
 				 	}
@@ -321,14 +329,18 @@ int main() {
 		  }
 		}
 
-		double margin = .224; // ~ 5meters/sec	
+		// double margin = .224; // ~ 5meters/sec	
+		double margin = .448;
 		if(too_close || reduceSpeed){
-			// if (ref_vel > speed_infront_car && (ref_vel - margin) < speed_infront_car){
-			// 	ref_vel = speed_infront_car;
+			// while(ref_vel > speed_infront_car){
+			// 	ref_vel -= margin;
 			// }
-			// else{
+			if (ref_vel > speed_infront_car && (ref_vel - margin) < speed_infront_car){
+				ref_vel = speed_infront_car;
+			}
+			else{
 				ref_vel -= margin; 
-			// }			
+			}			
 		}
 		else if(ref_vel < 49.5){
 			ref_vel += margin;
