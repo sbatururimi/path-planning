@@ -123,6 +123,33 @@ path_planning/fast:
 	$(MAKE) -f CMakeFiles/path_planning.dir/build.make CMakeFiles/path_planning.dir/build
 .PHONY : path_planning/fast
 
+src/bestLane.o: src/bestLane.cpp.o
+
+.PHONY : src/bestLane.o
+
+# target to build an object file
+src/bestLane.cpp.o:
+	$(MAKE) -f CMakeFiles/path_planning.dir/build.make CMakeFiles/path_planning.dir/src/bestLane.cpp.o
+.PHONY : src/bestLane.cpp.o
+
+src/bestLane.i: src/bestLane.cpp.i
+
+.PHONY : src/bestLane.i
+
+# target to preprocess a source file
+src/bestLane.cpp.i:
+	$(MAKE) -f CMakeFiles/path_planning.dir/build.make CMakeFiles/path_planning.dir/src/bestLane.cpp.i
+.PHONY : src/bestLane.cpp.i
+
+src/bestLane.s: src/bestLane.cpp.s
+
+.PHONY : src/bestLane.s
+
+# target to generate assembly for a file
+src/bestLane.cpp.s:
+	$(MAKE) -f CMakeFiles/path_planning.dir/build.make CMakeFiles/path_planning.dir/src/bestLane.cpp.s
+.PHONY : src/bestLane.cpp.s
+
 src/main.o: src/main.cpp.o
 
 .PHONY : src/main.o
@@ -159,6 +186,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... path_planning"
+	@echo "... src/bestLane.o"
+	@echo "... src/bestLane.i"
+	@echo "... src/bestLane.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

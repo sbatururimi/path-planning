@@ -9,6 +9,7 @@
 #include "Eigen-3.3/Eigen/QR"
 #include "json.hpp"
 #include "spline.h"
+#include "bestLane.hpp"
 
 
 using namespace std;
@@ -206,7 +207,7 @@ int main() {
   int lane = 1;
 
   // reference velocity to target
-  double ref_vel = 49.5;//mph 
+  double ref_vel = 0;//mph 
 
   h.onMessage([&ref_vel, &lane, &map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
@@ -243,7 +244,7 @@ int main() {
           	double end_path_d = j[1]["end_path_d"];
 
           	// Sensor Fusion Data, a list of all other cars on the same side of the road.
-          	auto sensor_fusion = j[1]["sensor_fusion"];
+          	auto sensor_fusion = j[1]["sensor_fusion"];      
 		
 		int prev_size = previous_path_x.size();
 
@@ -274,6 +275,65 @@ int main() {
 
 		// create a ist of widely paced (x, y)waypoints, evenly spaced at 30m
 		// later we will interpolate these aypoints with a spline and fill it with more points that control speed
+		//
+		//
+
+		// avoid collision with other cars
+		if(prev_size > 0){
+			car_s = end_path_s;
+		}
+
+		bool too_close = false;
+		bool reduceSpeed = false;
+		double speed_infront_car =  ref_vel;
+		// find ref_v to use
+		for(int i = 0; i < sensor_fusion.size(); ++i){
+		  // car is in my lane
+		  float d = sensor_fusion[i][6];
+		  // is the car between 4 & 8?As the width of the lane is 4
+		  if(d < (2 + 4 * lane + 2) && d > (2 + 4 * lane - 2)){
+		    	// get the speed
+			    double vx = sensor_fusion[i][3];
+	  		    double vy = sensor_fusion[i][4];
+			    double check_speed = sqrt(vx * vx + vy * vy);
+			    double check_car_s = sensor_fusion[i][5];
+
+			    //let's look  where is the car in the future
+			    check_car_s += ((double) prev_size * .02 * check_speed);// if using previous points can project
+			    // s value out.
+			    // check s values greater than mine and s gap:
+			    // if the car is in front of us and the gap is less than 30 meters
+			    if(check_car_s > car_s && (check_car_s - car_s) < 30){
+					 //   ref_vel = 29.5; //mph
+					// too_close = true;
+					 // if(lane > 0){
+					 //   lane -= 1;
+					 // }
+			    	int laneChange;
+				 	std::tie(laneChange, reduceSpeed) = bestChangeLaneOption(sensor_fusion, lane, i, prev_size, car_s, ref_vel);
+				
+				 	speed_infront_car = check_speed;
+				 	if(lane == laneChange){
+				 		too_close = true;
+				 	}
+				 	lane = laneChange;
+		    	}
+		  }
+		}
+
+		double margin = .224; // ~ 5meters/sec	
+		if(too_close || reduceSpeed){
+			// if (ref_vel > speed_infront_car && (ref_vel - margin) < speed_infront_car){
+			// 	ref_vel = speed_infront_car;
+			// }
+			// else{
+				ref_vel -= margin; 
+			// }			
+		}
+		else if(ref_vel < 49.5){
+			ref_vel += margin;
+		}
+
 		vector<double> ptsx;
 		vector<double> ptsy;
 
