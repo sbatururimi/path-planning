@@ -304,15 +304,17 @@ int main() {
 			    //let's look  where is the car in the future
 			    check_car_s += ((double) prev_size * .02 * check_speed);// if using previous points can project
 			    // s value out.
+
 			    // check s values greater than mine and s gap:
 			    // if the car is in front of us and the gap is less than 40 meters
 			    double dis = check_car_s - car_s;
 			    if(check_car_s > car_s && dis < 50){
 			    	if(dis < nearest_infront_car){
 			    		nearest_infront_car = dis;
-			    		speed_infront_car = check_speed;
-					 //   ref_vel = 29.5; //mph
+			    		speed_infront_car = check_speed;					 
 			    	}
+
+			    	//   ref_vel = 29.5; //mph
 					// too_close = true;
 					 // if(lane > 0){
 					 //   lane -= 1;
@@ -329,18 +331,22 @@ int main() {
 		  }
 		}
 
-		// double margin = .224; // ~ 5meters/sec	
-		double margin = .448;
-		if(too_close || reduceSpeed){
+		double margin = .224; // ~ 5meters/sec	
+		if(too_close){
 			// while(ref_vel > speed_infront_car){
 			// 	ref_vel -= margin;
 			// }
-			if (ref_vel > speed_infront_car && (ref_vel - margin) < speed_infront_car){
-				ref_vel = speed_infront_car;
-			}
-			else{
+
+
+			// if (ref_vel > speed_infront_car && (ref_vel - margin) < speed_infront_car){
+			// 	ref_vel = speed_infront_car;
+			// }
+			// else{
 				ref_vel -= margin; 
-			}			
+			// }			
+		}
+		else if(reduceSpeed){
+			ref_vel -= margin; 
 		}
 		else if(ref_vel < 49.5){
 			ref_vel += margin;

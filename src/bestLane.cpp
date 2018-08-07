@@ -1,11 +1,12 @@
 
 #include "bestLane.hpp"
+#include <iostream>
 
-
-float inefficiency_cost(float target_speed, float intended_speed) {
+float inefficiency_cost(float intended_speed) {
     /*
     Cost becomes higher for trajectories with intended lane that have traffic slower than target_speed.
     */
+    float target_speed = 50.;
     float cost = fabs(target_speed - intended_speed) / target_speed;
     
     return cost;
@@ -13,24 +14,33 @@ float inefficiency_cost(float target_speed, float intended_speed) {
 
 tuple<int, bool> bestChangeLaneOption(const vector<vector<double>> &sensor_fusion, int myLane, int indexToExclude, 
 							int prev_size, double car_s, double ref_vel){
-	int start = 0;
-	// if the car in front of us in is the same as `start` index, then change `start` and consider the next car
-	if (indexToExclude == start){
-		start++; 
-	}
+	// int start = 0;
+	// // if the car in front of us in is the same as `start` index, then change `start` and consider the next car
+	// if (indexToExclude == start){
+	// 	start++; 
+	// }
 
 	unordered_map<int, int> cars_in_lane; // we save only cars in front in other lanes
 	unordered_map<int, bool> allowed_transition_to_lane;
-	allowed_transition_to_lane = {{0, true}, {1, true}, {2, true}};
-	allowed_transition_to_lane[indexToExclude] = false;
+	for (int i = 0; i < 3; ++i){
+		if(i == myLane){
+			allowed_transition_to_lane[i] = false;
+		}
+		else{
+			allowed_transition_to_lane[i] = true;	
+		}
+		
+	}
+	// allowed_transition_to_lane = {{0, true}, {1, true}, {2, true}};
 
-	for (int i = start; i < sensor_fusion.size(); ++i){
+	// allowed_transition_to_lane[indexToExclude] = false;
+
+	for (int i = 0; i < sensor_fusion.size(); ++i){
 		if(i == indexToExclude){
 			continue;
 		}
 
 		float d = sensor_fusion[i][6];
-
 		//if the car is in the same lane, skip it
 		if(d < (2 + 4 * myLane + 2) && d > (2 + 4 * myLane - 2)){
 			continue;
@@ -47,9 +57,10 @@ tuple<int, bool> bestChangeLaneOption(const vector<vector<double>> &sensor_fusio
 
 		// if we are in the rightmost lane, i.e 2, we should not consider the lane 0.
 		// if we are in the leftmost lane, i.e 0, we should not consider the lane 2.
-		if(abs(lane - myLane) > 1){
-			continue;
-		}
+		// if(abs(lane - myLane) > 1){
+		// 	allowed_transition_to_lane[lane] = false;
+		// 	continue;
+		// }
 
 		double vx = sensor_fusion[i][3];
   		double vy = sensor_fusion[i][4];
@@ -59,12 +70,16 @@ tuple<int, bool> bestChangeLaneOption(const vector<vector<double>> &sensor_fusio
 		check_car_s += ((double) prev_size * .02 * check_speed);
 		// check that there is enough space for lane change, if not mark it as an option to not consider
 		// We need at least 50 meters to keep it safe
+		
 		if(check_car_s > car_s && (check_car_s - car_s) < 50){
-		// if(fabs(check_car_s - car_s) < 50){
+			cout << "lane: " << lane << endl;
+			std::cout << "check_car_s - car_s= " << check_car_s - car_s  << std::endl;
 			allowed_transition_to_lane[lane] = false;
 			continue;
 		}
 		else if(check_car_s < car_s && (car_s - check_car_s) < 30){
+			cout << "lane: " << lane << endl;
+			std::cout << "car_s - check_car_s= " << car_s - check_car_s << std::endl;
 			allowed_transition_to_lane[lane] = false;
 			continue;
 		}
@@ -105,6 +120,7 @@ tuple<int, bool> bestChangeLaneOption(const vector<vector<double>> &sensor_fusio
 		int lane = it->first;
 		bool allowed = it->second;
 		if(!allowed){
+			std::cout << "not allowed, lane: "<< it->first << std::endl;
 			continue;
 		}
 
@@ -116,21 +132,24 @@ tuple<int, bool> bestChangeLaneOption(const vector<vector<double>> &sensor_fusio
 			double vx = sensor_fusion[carIndex][3];
 	  		double vy = sensor_fusion[carIndex][4];
 	  		car_speed = sqrt(vx * vx + vy * vy);
-			float cost = inefficiency_cost(49.5, car_speed);
-			
+			cost = inefficiency_cost(car_speed);
 		}
 		catch (const std::out_of_range& oor) {
-			cost = 0.2;
+			cout << "no cars found in this lane" << endl;
+			cost = inefficiency_cost(49.5);
 		}
 
-
-		if (cost < minCost){
+		// find the min cost and also check that the lane is the nearest to ours
+		if (cost < minCost && (abs(lane - myLane) <= 1)){
 			minCost = cost;
 			targetLane = lane;
-			if (car_speed < ref_vel){
+
+			if (carIndex != -1 && car_speed < ref_vel){
 				reduceSpeed = true;
 			}
-			continue;
+			else{
+				reduceSpeed = false;
+			}
 		}
 		
 	}
