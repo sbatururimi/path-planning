@@ -7,7 +7,7 @@ float inefficiency_cost(float intended_speed) {
     Cost becomes higher for trajectories with intended lane that have traffic slower than target_speed.
     */
     float target_speed = 50.;
-    float cost = fabs(target_speed - intended_speed) / target_speed;
+    float cost = std::fabs(target_speed - intended_speed) / target_speed;
     
     return cost;
 }
@@ -64,7 +64,7 @@ tuple<int, bool> bestChangeLaneOption(const vector<vector<double>> &sensor_fusio
 
 		double vx = sensor_fusion[i][3];
   		double vy = sensor_fusion[i][4];
-  		double check_speed = sqrt(vx * vx + vy * vy);
+  		double check_speed = std::sqrt(vx * vx + vy * vy);
 		double check_car_s = sensor_fusion[i][5];
 
 		check_car_s += ((double) prev_size * .02 * check_speed);
@@ -131,7 +131,7 @@ tuple<int, bool> bestChangeLaneOption(const vector<vector<double>> &sensor_fusio
 			carIndex = cars_in_lane.at(lane);
 			double vx = sensor_fusion[carIndex][3];
 	  		double vy = sensor_fusion[carIndex][4];
-	  		car_speed = sqrt(vx * vx + vy * vy);
+	  		car_speed = std::sqrt(vx * vx + vy * vy);
 			cost = inefficiency_cost(car_speed);
 		}
 		catch (const std::out_of_range& oor) {
@@ -184,7 +184,7 @@ tuple<int, bool> changeToLane(const vector<vector<double>> &sensor_fusion, int c
 		// get the speed
 	    double vx = sensor_fusion[i][3];
 		double vy = sensor_fusion[i][4];
-	    double check_speed = sqrt(vx * vx + vy * vy);
+	    double check_speed = std::sqrt(vx * vx + vy * vy);
 	    double check_car_s = sensor_fusion[i][5];
 	    //let's look  where is the car in the future
 		check_car_s += ((double) prev_size * .02 * check_speed);// if using previous points can project s value out.

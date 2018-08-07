@@ -6,6 +6,7 @@
 #include <climits>
 #include <tuple>
 #include <vector>
+#include <math.h>
 
 using namespace std;
 
