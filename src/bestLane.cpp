@@ -156,3 +156,78 @@ tuple<int, bool> bestChangeLaneOption(const vector<vector<double>> &sensor_fusio
 
 	return  std::make_tuple(targetLane, reduceSpeed);
 }
+
+tuple<int, bool> changeToLane(const vector<vector<double>> &sensor_fusion, int currentLane, int prev_size, double car_s){
+	bool carLeft = false;
+	bool carRight = false;
+	bool carAhead = false;
+	double safeDist = 30; // in meters
+	for(int i = 0; i < sensor_fusion.size(); ++i){
+		// d coordinate (in Frenet coordinate system)
+		float d = sensor_fusion[i][6];
+		// get the lane number of the car
+		int lane = -1;		
+		if(d > 0 && lane < 4){
+			lane = 0;
+		}
+		if(d >= 4 && d < 8){
+			lane = 1;
+		}
+		else if(d >= 8){
+			lane = 2;
+		}
+
+		if(lane == -1){
+			continue;
+		}
+
+		// get the speed
+	    double vx = sensor_fusion[i][3];
+		double vy = sensor_fusion[i][4];
+	    double check_speed = sqrt(vx * vx + vy * vy);
+	    double check_car_s = sensor_fusion[i][5];
+	    //let's look  where is the car in the future
+		check_car_s += ((double) prev_size * .02 * check_speed);// if using previous points can project s value out.
+		// cout << "car_s="<<car_s << " check_car_s=" << check_car_s << endl;
+		if(lane == currentLane){
+			carAhead |= check_car_s > car_s && (check_car_s - car_s) < safeDist;	
+		}
+		else if(lane - currentLane == -1){
+			carLeft |= (car_s - safeDist) < check_car_s && (car_s + safeDist) > check_car_s;
+		}
+		else if(lane - currentLane == 1){
+			carRight |= (car_s - safeDist) < check_car_s && (car_s + safeDist) > check_car_s;
+		}		
+	}
+
+	// behaviour
+	bool tooClose = false;
+	int bestLane = currentLane;
+
+	if(carAhead){
+		cout << "car ahead" << endl;
+
+		if(!carLeft && currentLane > 0){
+			bestLane = currentLane - 1;
+			cout << "no car left" << endl;
+		}
+		else if(!carRight && currentLane != 2){
+			bestLane = currentLane + 1;
+			cout << "no car right" << endl;
+		}
+		else{
+			tooClose = true;
+			cout << "too close" << endl;
+		}
+	}
+	// else{
+	// 	cout << "no car ahead" << endl;
+	// 	if((currentLane == 0 && !carRight) || (currentLane == 2 && !carLeft)){
+	// 		cout << "got to center lane" << endl;
+	// 		bestLane = 1;
+	// 	}
+	// }
+
+	cout << "-----" << endl;
+	return std::make_tuple(bestLane, tooClose);
+}

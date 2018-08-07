@@ -248,7 +248,7 @@ int main() {
           	// Sensor Fusion Data, a list of all other cars on the same side of the road.
           	auto sensor_fusion = j[1]["sensor_fusion"];      
 		
-		int prev_size = previous_path_x.size();
+			int prev_size = previous_path_x.size();
 
 
 
@@ -285,53 +285,57 @@ int main() {
 			car_s = end_path_s;
 		}
 
-		bool too_close = false;
-		bool reduceSpeed = false;
-		double speed_infront_car = ref_vel;
-		double nearest_infront_car = DBL_MAX;
-		// find ref_v to use
-		for(int i = 0; i < sensor_fusion.size(); ++i){
-		  // car is in my lane
-		  float d = sensor_fusion[i][6];
-		  // is the car between 4 & 8?As the width of the lane is 4
-		  if(d < (2 + 4 * lane + 2) && d > (2 + 4 * lane - 2)){
-		    	// get the speed
-			    double vx = sensor_fusion[i][3];
-	  		    double vy = sensor_fusion[i][4];
-			    double check_speed = sqrt(vx * vx + vy * vy);
-			    double check_car_s = sensor_fusion[i][5];
+		// bool too_close = false;
+		// bool reduceSpeed = false;
+		// double speed_infront_car = ref_vel;
+		// double nearest_infront_car = DBL_MAX;
+		// // find ref_v to use
+		// for(int i = 0; i < sensor_fusion.size(); ++i){
+		//   // car is in my lane
+		//   float d = sensor_fusion[i][6];
+		//   // is the car between 4 & 8?As the width of the lane is 4
+		//   if(d < (2 + 4 * lane + 2) && d > (2 + 4 * lane - 2)){
+		//     	// get the speed
+		// 	    double vx = sensor_fusion[i][3];
+	 //  		    double vy = sensor_fusion[i][4];
+		// 	    double check_speed = sqrt(vx * vx + vy * vy);
+		// 	    double check_car_s = sensor_fusion[i][5];
 
-			    //let's look  where is the car in the future
-			    check_car_s += ((double) prev_size * .02 * check_speed);// if using previous points can project
-			    // s value out.
+		// 	    //let's look  where is the car in the future
+		// 	    check_car_s += ((double) prev_size * .02 * check_speed);// if using previous points can project
+		// 	    // s value out.
 
-			    // check s values greater than mine and s gap:
-			    // if the car is in front of us and the gap is less than 40 meters
-			    double dis = check_car_s - car_s;
-			    if(check_car_s > car_s && dis < 50){
-			    	if(dis < nearest_infront_car){
-			    		nearest_infront_car = dis;
-			    		speed_infront_car = check_speed;					 
-			    	}
+		// 	    // check s values greater than mine and s gap:
+		// 	    // if the car is in front of us and the gap is less than 40 meters
+		// 	    double dis = check_car_s - car_s;
+		// 	    if(check_car_s > car_s && dis < 50){
+		// 	    	if(dis < nearest_infront_car){
+		// 	    		nearest_infront_car = dis;
+		// 	    		speed_infront_car = check_speed;					 
+		// 	    	}
 
-			    	//   ref_vel = 29.5; //mph
-					// too_close = true;
-					 // if(lane > 0){
-					 //   lane -= 1;
-					 // }
-			    	int laneChange;
-				 	std::tie(laneChange, reduceSpeed) = bestChangeLaneOption(sensor_fusion, lane, i, prev_size, car_s, ref_vel);
+		// 	    	//   ref_vel = 29.5; //mph
+		// 			// too_close = true;
+		// 			 // if(lane > 0){
+		// 			 //   lane -= 1;
+		// 			 // }
+		// 	    	int laneChange;
+		// 		 	std::tie(laneChange, reduceSpeed) = bestChangeLaneOption(sensor_fusion, lane, i, prev_size, car_s, ref_vel);
 				
 				 	
-				 	if(lane == laneChange){
-				 		too_close = true;
-				 	}
-				 	lane = laneChange;
-		    	}
-		  }
-		}
+		// 		 	if(lane == laneChange){
+		// 		 		too_close = true;
+		// 		 	}
+		// 		 	lane = laneChange;
+		//     	}
+		//   }
+		// }
+		bool too_close;
+		std::tie(lane, too_close)  = changeToLane(sensor_fusion, lane, prev_size, car_s);
 
-		double margin = .224; // ~ 5meters/sec	
+		double acc = .224; // ~ 5meters/sec	
+		double speedLimit = 49.5;
+		double speed_diff = 0;
 		if(too_close){
 			// while(ref_vel > speed_infront_car){
 			// 	ref_vel -= margin;
@@ -342,14 +346,11 @@ int main() {
 			// 	ref_vel = speed_infront_car;
 			// }
 			// else{
-				ref_vel -= margin; 
+				speed_diff -= acc; 
 			// }			
 		}
-		else if(reduceSpeed){
-			ref_vel -= margin; 
-		}
-		else if(ref_vel < 49.5){
-			ref_vel += margin;
+		else if(ref_vel < speedLimit){
+			speed_diff += acc;
 		}
 
 		vector<double> ptsx;
@@ -392,8 +393,8 @@ int main() {
 
 		// in Frenet add evenly 30m spaced points ahead of starting reference 
 		vector<double> next_wp0 = getXY(car_s + 30, (2 + 4 * lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-         	vector<double> next_wp1 = getXY(car_s + 60, (2 + 4 * lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);	
-	        vector<double> next_wp2 = getXY(car_s + 90, (2 + 4 * lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+     	vector<double> next_wp1 = getXY(car_s + 60, (2 + 4 * lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);	
+        vector<double> next_wp2 = getXY(car_s + 90, (2 + 4 * lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
 	       	
 		ptsx.push_back(next_wp0[0]);
 		ptsx.push_back(next_wp1[0]);
@@ -421,7 +422,7 @@ int main() {
 
 		// define the actual (x, y) points we will use for the planner
 		vector<double> next_x_vals;
-	        vector<double> next_y_vals;
+	    vector<double> next_y_vals;
 
 		// start with all of the previous path points from last time
 		for(int i = 0; i < previous_path_x.size(); ++i){
@@ -440,35 +441,43 @@ int main() {
 		// here we will always output 50 points. We could have 47points from the previous path plan for example
 		// so that only 3 would needed to be computed
 		for(int i = 0; i <= 50-previous_path_x.size(); ++i){
-     		  double N = (target_dist / (.02 * ref_vel / 2.24));// /2.24 because we need meters/s instead of miles/sec
-		  double x_point = x_add_on + target_x / N;
-		  double y_point = s(x_point);
+			ref_vel += speed_diff;
+			if ( ref_vel > speedLimit ) {
+				ref_vel = speedLimit;
+			} 
+			else if ( ref_vel < acc ) {
+				ref_vel = acc;
+			}
 
-		  x_add_on = x_point;
+     		double N = (target_dist / (.02 * ref_vel / 2.24));// /2.24 because we need meters/s instead of miles/sec
+			double x_point = x_add_on + target_x / N;
+			double y_point = s(x_point);
 
-		  double x_ref = x_point;
-		  double y_ref = y_point;
+			x_add_on = x_point;
 
-		  // rotate back to normal after rotating it earlier
-		  x_point = (x_ref * cos(ref_yaw) - y_ref * sin(ref_yaw));
-		  y_point = (x_ref * sin(ref_yaw) + y_ref * cos(ref_yaw));
+			double x_ref = x_point;
+			double y_ref = y_point;
 
-		  x_point += ref_x;
-		  y_point += ref_y;
+			// rotate back to normal after rotating it earlier
+			x_point = (x_ref * cos(ref_yaw) - y_ref * sin(ref_yaw));
+			y_point = (x_ref * sin(ref_yaw) + y_ref * cos(ref_yaw));
 
-		  next_x_vals.push_back(x_point);
-		  next_y_vals.push_back(y_point);
+			x_point += ref_x;
+			y_point += ref_y;
+
+			next_x_vals.push_back(x_point);
+			next_y_vals.push_back(y_point);
 		}	
 
 
-            // END
-          	msgJson["next_x"] = next_x_vals;
-          	msgJson["next_y"] = next_y_vals;
+        // END
+      	msgJson["next_x"] = next_x_vals;
+      	msgJson["next_y"] = next_y_vals;
 
-          	auto msg = "42[\"control\","+ msgJson.dump()+"]";
+      	auto msg = "42[\"control\","+ msgJson.dump()+"]";
 
-          	//this_thread::sleep_for(chrono::milliseconds(1000));
-          	ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
+      	//this_thread::sleep_for(chrono::milliseconds(1000));
+      	ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
           
         }
       } else {
