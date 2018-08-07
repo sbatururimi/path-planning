@@ -161,7 +161,7 @@ tuple<int, bool> changeToLane(const vector<vector<double>> &sensor_fusion, int c
 	bool carLeft = false;
 	bool carRight = false;
 	bool carAhead = false;
-	double safeDist = 30; // in meters
+	double safeDist = 40; // in meters
 	for(int i = 0; i < sensor_fusion.size(); ++i){
 		// d coordinate (in Frenet coordinate system)
 		float d = sensor_fusion[i][6];

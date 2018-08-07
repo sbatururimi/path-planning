@@ -404,7 +404,7 @@ int main() {
 		ptsy.push_back(next_wp1[1]);
 		ptsy.push_back(next_wp2[1]);
 
-		// make the math easier and transfor to vehicle coordinates
+		// make the math easier and transform to vehicle coordinates
 		for(int i = 0; i < ptsx.size(); ++i){
 		  // shift car reference angle 0 degrees
 		  double shift_x = ptsx[i] - ref_x;
@@ -430,7 +430,7 @@ int main() {
 			next_y_vals.push_back(previous_path_y[i]);
 		}
 
-		// calculate how to break up pline points so that we travel at our desired reference velocity
+		// calculate how to break up spline points so that we travel at our desired reference velocity
 		double target_x = 30.0f;
 		double target_y = s(target_x);
 		double target_dist = sqrt(target_x * target_x + target_y * target_y);
